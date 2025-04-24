@@ -17,7 +17,7 @@ class Pembelian extends Model
     protected $fillable = [
         'Nota',
         'TglNota',
-        'KsSuplier',
+        'KdSuplier',
         'Diskon',
     ];
 
