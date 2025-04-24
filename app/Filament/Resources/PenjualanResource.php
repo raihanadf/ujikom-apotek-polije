@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PenjualanResource\Pages;
-use App\Filament\Resources\PenjualanResource\RelationManagers;
 use App\Models\Obat;
 use App\Models\Pelanggan;
 use App\Models\Penjualan;
@@ -16,12 +15,10 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter as FiltersFilter;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Table;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PenjualanResource extends Resource
 {
@@ -42,16 +39,10 @@ class PenjualanResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('Nota')
-                    ->required()
-                    ->maxLength(10)
-                    ->label('Nota')
-                    ->unique(ignoreRecord: true)
-                    ->placeholder('NPJ001')
-                    ->columnSpan(1),
                 DatePicker::make('TglNota')
                     ->required()
                     ->label('Date')
+                    ->default(now())
                     ->columnSpan(1),
                 Select::make('KdPelanggan')
                     ->required()
@@ -67,6 +58,7 @@ class PenjualanResource extends Resource
                     ->numeric()
                     ->label('Discount')
                     ->placeholder('0')
+                    ->default(0)
                     ->minValue(0),
                 Repeater::make('penjualan_detail')
                     ->label('Medicine Detail')
@@ -76,12 +68,13 @@ class PenjualanResource extends Resource
                             ->options(Obat::all()->pluck('NmObat', 'KdObat'))
                             ->searchable()
                             ->required(),
-                        TextInput::make('Quantity')
+                        TextInput::make('Jumlah')
                             ->numeric()
                             ->required()
-                            ->label('Quantity'),
+                            ->label('Quantity')
+                            ->minValue(1),
                     ])
-                    ->addActionLabel('Tambah Obat')
+                    ->addActionLabel('Add Medicine')
                     ->columns(2)
                     ->required()
                     ->columnSpan(2),
@@ -98,15 +91,7 @@ class PenjualanResource extends Resource
                     ->sortable(),
                 TextColumn::make('TglNota')
                     ->label('Date')
-                    ->sortable(),
-                TextColumn::make('obat.NmObat')
-                    ->label('Medicine')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(30),
-                TextColumn::make('Jumlah')
-                    ->getStateUsing(fn($record) => $record->obat->first()->pivot->Jumlah ?? 'N/A')
-                    ->label('Quantity')
+                    ->date()
                     ->sortable(),
                 TextColumn::make('pelanggan.NmPelanggan')
                     ->label('Customer')
@@ -115,12 +100,19 @@ class PenjualanResource extends Resource
                 TextColumn::make('Diskon')
                     ->label('Discount')
                     ->sortable()
-                    ->getStateUsing(fn($record) => $record->Diskon . '%'),
+                    ->formatStateUsing(fn($state) => $state . '%'),
+                TextColumn::make('obat_count')
+                    ->label('Items')
+                    ->counts('obat')
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('KdPelanggan')
                     ->label('Filter by Customer')
                     ->relationship('pelanggan', 'NmPelanggan'),
+                Filter::make('big_sales')
+                    ->label('Big Sales')
+                    ->query(fn(Builder $query): Builder => $query->whereHas('obat', fn(Builder $query) => $query->where('penjualan_detail.Jumlah', '>=', 10)))
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -133,8 +125,8 @@ class PenjualanResource extends Resource
                     Tables\Actions\ExportBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('Nota')
-            ->striped();;
+            ->defaultSort('Nota', 'desc')
+            ->striped();
     }
 
     public static function getRelations(): array
