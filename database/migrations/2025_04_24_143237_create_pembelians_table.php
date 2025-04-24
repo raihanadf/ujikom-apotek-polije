@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pembelians', function (Blueprint $table) {
-            $table->string('nota')->primary();
+            $table->string('Nota')->primary();
             $table->date('TglNota');
             $table->string('KdSuplier');
             $table->decimal('Diskon', 5, 2);
