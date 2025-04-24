@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Pembelian;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -19,6 +20,10 @@ class DatabaseSeeder extends Seeder
             SuplierSeeder::class,
             ObatSeeder::class,
             PelangganSeeder::class,
+            PembelianSeeder::class,
+            PenjualanSeeder::class,
+            PembelianDetailSeeder::class,
+            PenjualanDetailSeeder::class
         ]);
     }
 }

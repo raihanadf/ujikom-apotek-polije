@@ -29,4 +29,14 @@ class Obat extends Model
     {
         return $this->belongsTo(Suplier::class, 'KdSuplier', 'KdSuplier');
     }
+
+    public function pembelian()
+    {
+        return $this->belongsToMany(Pembelian::class, 'pembelian_detail', 'KdObat', 'Nota')->withPivot('Jumlah');
+    }
+
+    public function penjualan()
+    {
+        return $this->belongsToMany(Penjualan::class, 'penjualan_detail', 'KdObat', 'Nota')->withPivot('Jumlah');
+    }
 }

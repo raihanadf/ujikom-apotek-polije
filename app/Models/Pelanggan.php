@@ -21,4 +21,9 @@ class Pelanggan extends Model
         'Kota',
         'Telpon'
     ];
+
+    public function penjualan()
+    {
+        return $this->hasMany(Penjualan::class, 'KdPelanggan', 'KdPelanggan');
+    }
 }

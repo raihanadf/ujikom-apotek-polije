@@ -26,4 +26,9 @@ class Suplier extends Model
     {
         return $this->hasMany(Obat::class, 'KdSuplier', 'KdSuplier');
     }
+
+    public function pembelian()
+    {
+        return $this->hasMany(Pembelian::class, 'KdSuplier', 'KdSuplier');
+    }
 }
