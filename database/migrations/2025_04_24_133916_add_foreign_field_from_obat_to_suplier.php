@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('supliers', function (Blueprint $table) {
+        Schema::table('obats', function (Blueprint $table) {
             $table->foreign('KdSuplier')->references('KdSuplier')->on('supliers');
         });
     }
