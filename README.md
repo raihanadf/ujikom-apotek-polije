@@ -5,7 +5,7 @@ Untuk memenuhi ketentuan wisuda yaitu sertifikat kompetensi. Padahal udah ada TS
 - ```git clone <<this repo>>```
 - ```composer install && pnpm install```
 - copy .env.example jadi .env 
-- ```php artisan migrate```
+- ```php artisan migrate:fresh --seed```
 - ```composer dev```
 
 Apotek adalah apotek.
