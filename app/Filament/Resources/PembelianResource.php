@@ -3,12 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PembelianResource\Pages;
-use App\Filament\Resources\PembelianResource\RelationManagers;
 use App\Models\Obat;
 use App\Models\Pembelian;
 use App\Models\Suplier;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -20,8 +20,6 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PembelianResource extends Resource
 {
@@ -38,47 +36,15 @@ class PembelianResource extends Resource
         return 'Transaction Management';
     }
 
-    public static function mutateFormDataBeforeCreate(array $data): array
-    {
-        unset($data['pembelian_detail']);
-        return $data;
-    }
-
-    public static function mutateFormDataBeforeUpdate(array $data): array
-    {
-        unset($data['pembelian_detail']);
-        return $data;
-    }
-
-    protected function handleRecordCreation(array $data): Pembelian
-    {
-        $detailData = $data['pembelian_detail'] ?? [];
-        unset($data['pembelian_detail']);
-
-        $pembelian = Pembelian::create($data);
-
-        foreach ($detailData as $detail) {
-            $pembelian->obat()->attach($detail['KdObat'], ['Jumlah' => $detail['Jumlah']]);
-        }
-
-        return $pembelian;
-    }
-
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('Nota')
-                    ->required()
-                    ->maxLength(10)
-                    ->label('Nota')
-                    ->unique(ignoreRecord: true)
-                    ->placeholder('NPB001')
-                    ->columnSpan(1),
                 DatePicker::make('TglNota')
                     ->required()
                     ->label('Date')
-                    ->columnSpan(1),
+                    ->columnSpan(1)
+                    ->default(now()),
                 Select::make('KdSuplier')
                     ->required()
                     ->label('Supplier')
@@ -93,8 +59,9 @@ class PembelianResource extends Resource
                     ->numeric()
                     ->label('Discount')
                     ->placeholder('0')
+                    ->default(0)
                     ->minValue(0),
-                Repeater::make('obat')
+                Repeater::make('pembelian_detail')
                     ->label('Medicine Detail')
                     ->schema([
                         Select::make('KdObat')
@@ -105,9 +72,10 @@ class PembelianResource extends Resource
                         TextInput::make('Jumlah')
                             ->numeric()
                             ->required()
-                            ->label('Quantity'),
+                            ->label('Quantity')
+                            ->minValue(1),
                     ])
-                    ->addActionLabel('Tambah Obat')
+                    ->addActionLabel('Add Medicine')
                     ->columns(2)
                     ->required()
                     ->columnSpan(2),
@@ -124,15 +92,7 @@ class PembelianResource extends Resource
                     ->sortable(),
                 TextColumn::make('TglNota')
                     ->label('Date')
-                    ->sortable(),
-                TextColumn::make('obat.NmObat')
-                    ->label('Medicine')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(30),
-                TextColumn::make('Jumlah')
-                    ->getStateUsing(fn($record) => $record->obat->first()->pivot->Jumlah ?? 'N/A')
-                    ->label('Quantity')
+                    ->date()
                     ->sortable(),
                 TextColumn::make('suplier.NmSuplier')
                     ->label('Supplier')
@@ -141,7 +101,11 @@ class PembelianResource extends Resource
                 TextColumn::make('Diskon')
                     ->label('Discount')
                     ->sortable()
-                    ->getStateUsing(fn($record) => $record->Diskon . '%'),
+                    ->formatStateUsing(fn($state) => $state . '%'),
+                TextColumn::make('obat_count')
+                    ->label('Items')
+                    ->counts('obat')
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('KdSuplier')
@@ -163,7 +127,7 @@ class PembelianResource extends Resource
                     Tables\Actions\ExportBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('Nota')
+            ->defaultSort('Nota', 'desc')
             ->striped();
     }
 
@@ -179,6 +143,7 @@ class PembelianResource extends Resource
         return [
             'index' => Pages\ListPembelians::route('/'),
             'create' => Pages\CreatePembelian::route('/create'),
+            'view' => Pages\ViewPembelian::route('/{record}'),
             'edit' => Pages\EditPembelian::route('/{record}/edit'),
         ];
     }

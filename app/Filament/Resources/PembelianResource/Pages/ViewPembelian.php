@@ -4,9 +4,9 @@ namespace App\Filament\Resources\PembelianResource\Pages;
 
 use App\Filament\Resources\PembelianResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\ViewRecord;
 
-class EditPembelian extends EditRecord
+class ViewPembelian extends ViewRecord
 {
     protected static string $resource = PembelianResource::class;
 
@@ -24,28 +24,10 @@ class EditPembelian extends EditRecord
         return $data;
     }
 
-    protected function mutateFormDataBeforeSave(array $data): array
-    {
-        $this->pembelianDetail = $data['pembelian_detail'] ?? [];
-        unset($data['pembelian_detail']);
-
-        return $data;
-    }
-
-    protected function afterSave(): void
-    {
-        $syncData = [];
-        foreach ($this->pembelianDetail as $item) {
-            $syncData[$item['KdObat']] = ['Jumlah' => $item['Jumlah']];
-        }
-
-        $this->record->obat()->sync($syncData);
-    }
-
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\EditAction::make(),
         ];
     }
 }
