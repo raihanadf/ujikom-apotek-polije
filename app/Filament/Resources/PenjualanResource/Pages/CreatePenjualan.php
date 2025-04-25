@@ -42,6 +42,6 @@ class CreatePenjualan extends CreateRecord
         $nextNumericPart = $numericPart + 1;
 
         // will handle npj001-npj999, npj1000 and beyond
-        return 'NPJ' . str_pad($nextNumericPart, strlen((string)$numericPart), '0', STR_PAD_LEFT);
+        return 'NPJ' . str_pad($nextNumericPart, 3, '0', STR_PAD_LEFT);
     }
 }

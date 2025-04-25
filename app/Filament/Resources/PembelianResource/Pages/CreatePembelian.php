@@ -41,6 +41,6 @@ class CreatePembelian extends CreateRecord
         $nextNumericPart = $numericPart + 1;
 
         // will handle npb001-npb999, npb1000 and beyond
-        return 'NPB' . str_pad($nextNumericPart, strlen((string)$numericPart), '0', STR_PAD_LEFT);
+        return 'NPB' . str_pad($nextNumericPart, 3, '0', STR_PAD_LEFT);
     }
 }
