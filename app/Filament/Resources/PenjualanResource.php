@@ -62,6 +62,12 @@ class PenjualanResource extends Resource
                     ->placeholder('0')
                     ->default(0)
                     ->minValue(0),
+                TextInput::make('TotalHargaKeseluruhan')
+                    ->label('Total Price')
+                    ->disabled()
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->default(0),
                 Repeater::make('penjualan_detail')
                     ->label('Medicine Detail')
                     ->schema([

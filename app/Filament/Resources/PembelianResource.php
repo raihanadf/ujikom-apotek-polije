@@ -15,6 +15,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -61,6 +62,12 @@ class PembelianResource extends Resource
                     ->placeholder('0')
                     ->default(0)
                     ->minValue(0),
+                TextInput::make('TotalHargaKeseluruhan')
+                    ->label('Total Price')
+                    ->disabled()
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->default(0),
                 Repeater::make('pembelian_detail')
                     ->label('Medicine Detail')
                     ->schema([
@@ -118,14 +125,11 @@ class PembelianResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ExportBulkAction::make(),
-                ]),
+                ExportBulkAction::make()
             ])
             ->defaultSort('Nota', 'desc')
             ->striped();
@@ -144,7 +148,7 @@ class PembelianResource extends Resource
             'index' => Pages\ListPembelians::route('/'),
             'create' => Pages\CreatePembelian::route('/create'),
             'view' => Pages\ViewPembelian::route('/{record}'),
-            'edit' => Pages\EditPembelian::route('/{record}/edit'),
+            // 'edit' => Pages\EditPembelian::route('/{record}/edit'),
         ];
     }
 }
