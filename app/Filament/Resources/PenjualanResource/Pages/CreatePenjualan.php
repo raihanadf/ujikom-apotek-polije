@@ -4,6 +4,7 @@ namespace App\Filament\Resources\PenjualanResource\Pages;
 
 use App\Filament\Resources\PenjualanResource;
 use App\Models\Penjualan;
+use App\Models\Obat;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreatePenjualan extends CreateRecord
@@ -24,6 +25,12 @@ class CreatePenjualan extends CreateRecord
     {
         foreach ($this->penjualanDetail as $item) {
             $this->record->obat()->attach($item['KdObat'], ['Jumlah' => $item['Jumlah']]);
+
+            // Mengurangi Stock
+            $obat = Obat::find($item['KdObat']);
+            if ($obat) {
+                $obat->decrement('Stok', $item['Jumlah']);
+            }
         }
     }
 

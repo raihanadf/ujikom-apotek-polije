@@ -4,6 +4,7 @@ namespace App\Filament\Resources\PembelianResource\Pages;
 
 use App\Filament\Resources\PembelianResource;
 use App\Models\Pembelian;
+use App\Models\Obat;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreatePembelian extends CreateRecord
@@ -24,6 +25,12 @@ class CreatePembelian extends CreateRecord
     {
         foreach ($this->pembelianDetail as $item) {
             $this->record->obat()->attach($item['KdObat'], ['Jumlah' => $item['Jumlah']]);
+
+            // Menambah stock
+            $obat = Obat::find($item['KdObat']);
+            if ($obat) {
+                $obat->increment('Stok', $item['Jumlah']);
+            }
         }
     }
 

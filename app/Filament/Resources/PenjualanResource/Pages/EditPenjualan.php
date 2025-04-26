@@ -34,11 +34,42 @@ class EditPenjualan extends EditRecord
 
     protected function afterSave(): void
     {
-        $syncData = [];
-        foreach ($this->penjualanDetail as $item) {
-            $syncData[$item['KdObat']] = ['Jumlah' => $item['Jumlah']];
+        // Ambil data penjualan detail sebelum perubahan
+        $originalDetails = $this->record->obat->mapWithKeys(function ($obat) {
+            return [$obat->KdObat => $obat->pivot->Jumlah];
+        });
+    
+        // Data baru dari form
+        $newDetails = collect($this->penjualanDetail)->mapWithKeys(function ($item) {
+            return [$item['KdObat'] => $item['Jumlah']];
+        });
+    
+        // Perbarui stok berdasarkan perubahan
+        foreach ($newDetails as $kdObat => $newJumlah) {
+            $originalJumlah = $originalDetails[$kdObat] ?? 0; // Jumlah sebelum perubahan
+            $selisih = $newJumlah - $originalJumlah; // Hitung selisih
+    
+            $obat = \App\Models\Obat::find($kdObat);
+            if ($obat) {
+                $obat->decrement('Stok', $selisih); // Kurangi stok jika selisih positif
+            }
         }
-
+    
+        // Kembalikan stok untuk obat yang dihapus dari penjualan
+        foreach ($originalDetails as $kdObat => $originalJumlah) {
+            if (!$newDetails->has($kdObat)) {
+                $obat = \App\Models\Obat::find($kdObat);
+                if ($obat) {
+                    $obat->increment('Stok', $originalJumlah); // Kembalikan stok
+                }
+            }
+        }
+    
+        // Sinkronkan data baru ke tabel pivot
+        $syncData = $newDetails->mapWithKeys(function ($jumlah, $kdObat) {
+            return [$kdObat => ['Jumlah' => $jumlah]];
+        })->toArray();
+    
         $this->record->obat()->sync($syncData);
     }
 

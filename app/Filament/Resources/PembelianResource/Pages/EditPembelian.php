@@ -4,6 +4,7 @@ namespace App\Filament\Resources\PembelianResource\Pages;
 
 use App\Filament\Resources\PembelianResource;
 use Filament\Actions;
+use App\Models\Obat;
 use Filament\Resources\Pages\EditRecord;
 
 class EditPembelian extends EditRecord
@@ -34,10 +35,41 @@ class EditPembelian extends EditRecord
 
     protected function afterSave(): void
     {
-        $syncData = [];
-        foreach ($this->pembelianDetail as $item) {
-            $syncData[$item['KdObat']] = ['Jumlah' => $item['Jumlah']];
+        // Mengambil data sebelum perubahan
+        $originalDetails = $this->record->obat->mapWithKeys(function ($obat) {
+            return [$obat->KdObat => $obat->pivot->Jumlah];
+        });
+
+        // Mengambil data baru
+        $newDetails = collect($this->pembelianDetail)->mapWithKeys(function ($item) {
+            return [$item['KdObat'] => $item['Jumlah']];
+        });
+
+        // Memperbarui stock
+        foreach ($newDetails as $KdObat => $newJumlah) {
+            $originalJumlah = $originalDetails[$KdObat] ?? 0;
+            $selisih = $newJumlah - $originalJumlah;
+
+            $obat = Obat::find($KdObat);
+            if ($obat) {
+                $obat->increment('Stok', $selisih);
+            }
         }
+
+        // Mengembalikan stock untuk obat yang dihapus
+        foreach ($originalDetails as $KdObat => $originalJumlah) {
+            if (!$newDetails->has($KdObat)) {
+                $obat = Obat::find($KdObat);
+                if ($obat) {
+                    $obat->decrement('Stok', $originalJumlah);
+                }
+            }
+        }
+
+        // Mensinkronkan stock
+        $syncData = $newDetails->mapWithKeys(function ($jumlah, $KdObat) {
+            return [$KdObat => ['Jumlah' => $jumlah]];
+        })->toArray();
 
         $this->record->obat()->sync($syncData);
     }
