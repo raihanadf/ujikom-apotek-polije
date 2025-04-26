@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\PenjualanExporter;
 use App\Filament\Resources\PenjualanResource\Pages;
 use App\Models\Obat;
 use App\Models\Pelanggan;
@@ -14,6 +15,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
@@ -72,7 +74,18 @@ class PenjualanResource extends Resource
                             ->numeric()
                             ->required()
                             ->label('Quantity')
-                            ->minValue(1),
+                            ->minValue(1)
+                            ->rule(function (callable $get) {
+                                return function (string $attribute, $value, $fail) use ($get) {
+                                    $obatId = $get('KdObat');
+                                    if ($obatId) {
+                                        $obat = Obat::find($obatId);
+                                        if ($obat && $value > $obat->Stok) {
+                                            $fail("Penjualan gagal: Stok {$obat->NmObat} hanya tersedia {$obat->Stok}.");
+                                        }
+                                    }
+                                };
+                            }),
                     ])
                     ->addActionLabel('Add Medicine')
                     ->columns(2)
@@ -116,14 +129,12 @@ class PenjualanResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ExportBulkAction::make(),
-                ]),
+                ExportBulkAction::make()
+                    ->exporter(PenjualanExporter::class)
             ])
             ->defaultSort('Nota', 'desc')
             ->striped();
