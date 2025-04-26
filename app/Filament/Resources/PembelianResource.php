@@ -79,6 +79,12 @@ class PembelianResource extends Resource
                     ->columns(2)
                     ->required()
                     ->columnSpan(2),
+                TextInput::make('TotalHargaKeseluruhan')
+                    ->label('Total Price')
+                    ->disabled()
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->default(0),
             ]);
     }
 

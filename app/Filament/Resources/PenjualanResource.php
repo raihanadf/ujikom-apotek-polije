@@ -60,6 +60,12 @@ class PenjualanResource extends Resource
                     ->placeholder('0')
                     ->default(0)
                     ->minValue(0),
+                TextInput::make('TotalHargaKeseluruhan')
+                    ->label('Total Price')
+                    ->disabled()
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->default(0),
                 Repeater::make('penjualan_detail')
                     ->label('Detail Obat')
                     ->schema([
@@ -72,7 +78,18 @@ class PenjualanResource extends Resource
                             ->numeric()
                             ->required()
                             ->label('Jumlah')
-                            ->minValue(1),
+                            ->minValue(1)
+                            ->rule(function (callable $get) {
+                                return function (string $attribute, $value, $fail) use ($get) {
+                                    $obatId = $get('KdObat');
+                                    if ($obatId) {
+                                        $obat = Obat::find($obatId);
+                                        if ($obat && $value > $obat->Stok) {
+                                            $fail("Penjualan gagal: Stok {$obat->NmObat} hanya tersedia {$obat->Stok}.");
+                                        }
+                                    }
+                                };
+                            }),
                     ])
                     ->addActionLabel('Tambah Obat')
                     ->columns(2)

@@ -16,10 +16,15 @@ class ViewPenjualan extends ViewRecord
             return [
                 'KdObat' => $obat->KdObat,
                 'Jumlah' => $obat->pivot->Jumlah,
+                'HargaJual' => $obat->HargaJual,
+                'TotalHarga' => $obat->pivot->Jumlah * $obat->HargaJual,
             ];
         })->toArray();
 
         $data['penjualan_detail'] = $penjualanDetail;
+        $totalHarga = collect($penjualanDetail)->sum('TotalHarga');
+        $diskon = $this->record->Diskon ?? 0;
+        $data['TotalHargaKeseluruhan'] = $totalHarga - ($totalHarga * $diskon / 100);
 
         return $data;
     }
