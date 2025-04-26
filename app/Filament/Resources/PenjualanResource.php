@@ -26,13 +26,13 @@ class PenjualanResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-left-end-on-rectangle';
 
-    protected static ?string $navigationLabel = 'Sale';
+    protected static ?string $navigationLabel = 'Penjualan';
 
     protected static ?string $recordTitleAttribute = 'Nota';
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Transaction Management';
+        return 'Manajemen Transaksi';
     }
 
     public static function form(Form $form): Form
@@ -41,40 +41,40 @@ class PenjualanResource extends Resource
             ->schema([
                 DatePicker::make('TglNota')
                     ->required()
-                    ->label('Date')
+                    ->label('Tanggal')
                     ->default(now())
                     ->columnSpan(1),
                 Select::make('KdPelanggan')
                     ->required()
-                    ->label('Customer')
+                    ->label('Pelanggan')
                     ->options(function () {
                         return Pelanggan::all()->pluck('NmPelanggan', 'KdPelanggan');
                     })
                     ->searchable()
-                    ->placeholder('Select customer')
+                    ->placeholder('Pilih pelanggan')
                     ->columnSpan(1),
                 TextInput::make('Diskon')
                     ->required()
                     ->numeric()
-                    ->label('Discount')
+                    ->label('Diskon')
                     ->placeholder('0')
                     ->default(0)
                     ->minValue(0),
                 Repeater::make('penjualan_detail')
-                    ->label('Medicine Detail')
+                    ->label('Detail Obat')
                     ->schema([
                         Select::make('KdObat')
-                            ->label('Name')
+                            ->label('Nama')
                             ->options(Obat::all()->pluck('NmObat', 'KdObat'))
                             ->searchable()
                             ->required(),
                         TextInput::make('Jumlah')
                             ->numeric()
                             ->required()
-                            ->label('Quantity')
+                            ->label('Jumlah')
                             ->minValue(1),
                     ])
-                    ->addActionLabel('Add Medicine')
+                    ->addActionLabel('Tambah Obat')
                     ->columns(2)
                     ->required()
                     ->columnSpan(2),
@@ -90,39 +90,38 @@ class PenjualanResource extends Resource
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('TglNota')
-                    ->label('Date')
+                    ->label('Tanggal')
                     ->date()
                     ->sortable(),
                 TextColumn::make('pelanggan.NmPelanggan')
-                    ->label('Customer')
+                    ->label('Pelanggan')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('Diskon')
-                    ->label('Discount')
+                    ->label('Diskon')
                     ->sortable()
                     ->formatStateUsing(fn($state) => $state . '%'),
                 TextColumn::make('obat_count')
-                    ->label('Items')
+                    ->label('Item')
                     ->counts('obat')
                     ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('KdPelanggan')
-                    ->label('Filter by Customer')
+                    ->label('Filter berdasarkan Pelanggan')
                     ->relationship('pelanggan', 'NmPelanggan'),
                 Filter::make('big_sales')
-                    ->label('Big Sales')
+                    ->label('Penjualan Besar')
                     ->query(fn(Builder $query): Builder => $query->whereHas('obat', fn(Builder $query) => $query->where('penjualan_detail.Jumlah', '>=', 10)))
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()->label('Lihat'),
+                Tables\Actions\EditAction::make()->label('Edit'),
+                Tables\Actions\DeleteAction::make()->label('Hapus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ExportBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label('Hapus'),
                 ]),
             ])
             ->defaultSort('Nota', 'desc')

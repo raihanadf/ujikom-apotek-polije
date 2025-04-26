@@ -23,7 +23,7 @@ class PelangganResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $navigationLabel = 'Customers';
+    protected static ?string $navigationLabel = 'Pelanggan';
 
     protected static ?string $recordTitleAttribute = 'NmPelanggan';
 
@@ -31,7 +31,7 @@ class PelangganResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Customer Management';
+        return 'Manajemen Pelanggan';
     }
 
     public static function form(Form $form): Form
@@ -41,32 +41,32 @@ class PelangganResource extends Resource
                 TextInput::make('KdPelanggan')
                     ->required()
                     ->maxLength(10)
-                    ->label('Customer Code')
+                    ->label('Kode Pelanggan')
                     ->unique(ignoreRecord: true)
                     ->placeholder('PLG001')
-                    ->helperText('Enter a unique customer code (e.g., PLG001)'),
+                    ->helperText('Masukkan kode pelanggan unik (contoh: PLG001)'),
 
                 TextInput::make('NmPelanggan')
                     ->required()
                     ->maxLength(255)
-                    ->label('Customer Name')
+                    ->label('Nama Pelanggan')
                     ->placeholder('Rumah Sakit Medika'),
 
                 Textarea::make('Alamat')
                     ->maxLength(255)
-                    ->label('Address')
+                    ->label('Alamat')
                     ->placeholder('Jl. Pahlawan No. 10')
                     ->columnSpanFull(),
 
                 TextInput::make('Kota')
                     ->maxLength(100)
-                    ->label('City')
+                    ->label('Kota')
                     ->placeholder('Jakarta'),
 
                 TextInput::make('Telpon')
                     ->tel()
                     ->maxLength(20)
-                    ->label('Phone Number')
+                    ->label('Nomor Telepon')
                     ->placeholder('021-9876543'),
             ])->columns(2);
     }
@@ -76,17 +76,17 @@ class PelangganResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('KdPelanggan')
-                    ->label('Customer Code')
+                    ->label('Kode Pelanggan')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('NmPelanggan')
-                    ->label('Customer Name')
+                    ->label('Nama Pelanggan')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('Alamat')
-                    ->label('Address')
+                    ->label('Alamat')
                     ->limit(30)
                     ->tooltip(function (TextColumn $column): ?string {
                         $state = $column->getState();
@@ -97,39 +97,41 @@ class PelangganResource extends Resource
                     }),
 
                 TextColumn::make('Kota')
-                    ->label('City')
+                    ->label('Kota')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('Telpon')
-                    ->label('Phone')
+                    ->label('Telepon')
                     ->searchable(),
 
                 TextColumn::make('created_at')
                     ->dateTime('d M Y, H:i')
+                    ->label('Dibuat Pada')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('updated_at')
                     ->dateTime('d M Y, H:i')
+                    ->label('Diperbarui Pada')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('Kota')
-                    ->label('Filter by City')
+                    ->label('Filter Berdasarkan Kota')
                     ->options(fn() => Pelanggan::distinct()->pluck('Kota', 'Kota')->toArray()),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()->label('Lihat'),
+                Tables\Actions\EditAction::make()->label('Edit'),
+                Tables\Actions\DeleteAction::make()->label('Hapus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ExportBulkAction::make(),
-                ]),
+                    Tables\Actions\DeleteBulkAction::make()->label('Hapus'),
+                    Tables\Actions\ExportBulkAction::make()->label('Ekspor'),
+                ])->label('Aksi Massal'),
             ])
             ->defaultSort('NmPelanggan')
             ->striped();
@@ -137,9 +139,7 @@ class PelangganResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            // No relations for now, could add penjualan relations if needed later
-        ];
+        return [];
     }
 
     public static function getPages(): array

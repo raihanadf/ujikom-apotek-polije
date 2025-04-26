@@ -24,7 +24,7 @@ class ObatResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
 
-    protected static ?string $navigationLabel = 'Medicines';
+    protected static ?string $navigationLabel = 'Obat';
 
     protected static ?string $recordTitleAttribute = 'NmObat';
 
@@ -32,7 +32,7 @@ class ObatResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Inventory Management';
+        return 'Manajemen Inventaris';
     }
 
     public static function form(Form $form): Form
@@ -42,7 +42,7 @@ class ObatResource extends Resource
                 TextInput::make('KdObat')
                     ->required()
                     ->maxLength(10)
-                    ->label('Medicine Code')
+                    ->label('Kode Obat')
                     ->unique(ignoreRecord: true)
                     ->placeholder('OBT001')
                     ->columnSpan(1),
@@ -50,35 +50,35 @@ class ObatResource extends Resource
                 TextInput::make('NmObat')
                     ->required()
                     ->maxLength(255)
-                    ->label('Medicine Name')
+                    ->label('Nama Obat')
                     ->placeholder('Paracetamol 500mg')
                     ->columnSpan(1),
 
                 Select::make('Jenis')
                     ->required()
-                    ->label('Type')
+                    ->label('Jenis')
                     ->options([
                         'Tablet' => 'Tablet',
-                        'Kapsul' => 'Capsule',
-                        'Sirup' => 'Syrup',
-                        'Salep' => 'Ointment',
-                        'Injeksi' => 'Injection',
-                        'Tetes' => 'Drops',
-                        'Lain-lain' => 'Others'
+                        'Kapsul' => 'Kapsul',
+                        'Sirup' => 'Sirup',
+                        'Salep' => 'Salep',
+                        'Injeksi' => 'Injeksi',
+                        'Tetes' => 'Tetes',
+                        'Lain-lain' => 'Lain-lain'
                     ])
-                    ->placeholder('Select medicine type'),
+                    ->placeholder('Pilih jenis obat'),
 
                 TextInput::make('Satuan')
                     ->required()
                     ->maxLength(50)
-                    ->label('Unit')
+                    ->label('Satuan')
                     ->placeholder('Strip'),
 
                 TextInput::make('HargaBeli')
                     ->required()
                     ->numeric()
                     ->prefix('Rp')
-                    ->label('Purchase Price')
+                    ->label('Harga Beli')
                     ->placeholder('10000')
                     ->minValue(0),
 
@@ -86,14 +86,14 @@ class ObatResource extends Resource
                     ->required()
                     ->numeric()
                     ->prefix('Rp')
-                    ->label('Selling Price')
+                    ->label('Harga Jual')
                     ->placeholder('12000')
                     ->minValue(0),
 
                 TextInput::make('Stok')
                     ->required()
                     ->numeric()
-                    ->label('Stock')
+                    ->label('Stok')
                     ->placeholder('100')
                     ->minValue(0),
 
@@ -104,7 +104,7 @@ class ObatResource extends Resource
                         return Suplier::all()->pluck('NmSuplier', 'KdSuplier');
                     })
                     ->searchable()
-                    ->placeholder('Select supplier')
+                    ->placeholder('Pilih supplier')
                     ->columnSpanFull(),
             ])->columns(2);
     }
@@ -114,36 +114,36 @@ class ObatResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('KdObat')
-                    ->label('Code')
+                    ->label('Kode')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('NmObat')
-                    ->label('Name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable()
                     ->limit(30),
 
                 TextColumn::make('Jenis')
-                    ->label('Type')
+                    ->label('Jenis')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('Satuan')
-                    ->label('Unit'),
+                    ->label('Satuan'),
 
                 TextColumn::make('HargaBeli')
-                    ->label('Purchase Price')
+                    ->label('Harga Beli')
                     ->money('IDR')
                     ->sortable(),
 
                 TextColumn::make('HargaJual')
-                    ->label('Selling Price')
+                    ->label('Harga Jual')
                     ->money('IDR')
                     ->sortable(),
 
                 TextColumn::make('Stok')
-                    ->label('Stock')
+                    ->label('Stok')
                     ->numeric()
                     ->sortable()
                     ->color(
@@ -158,34 +158,33 @@ class ObatResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('Jenis')
-                    ->label('Filter by Type')
+                    ->label('Filter berdasarkan Jenis')
                     ->options([
                         'Tablet' => 'Tablet',
-                        'Kapsul' => 'Capsule',
-                        'Sirup' => 'Syrup',
-                        'Salep' => 'Ointment',
-                        'Injeksi' => 'Injection',
-                        'Tetes' => 'Drops',
-                        'Lain-lain' => 'Others'
+                        'Kapsul' => 'Kapsul',
+                        'Sirup' => 'Sirup',
+                        'Salep' => 'Salep',
+                        'Injeksi' => 'Injeksi',
+                        'Tetes' => 'Tetes',
+                        'Lain-lain' => 'Lain-lain'
                     ]),
 
                 SelectFilter::make('KdSuplier')
-                    ->label('Filter by Supplier')
+                    ->label('Filter berdasarkan Supplier')
                     ->relationship('suplier', 'NmSuplier'),
 
                 Tables\Filters\Filter::make('low_stock')
-                    ->label('Low Stock')
+                    ->label('Stok Rendah')
                     ->query(fn(Builder $query): Builder => $query->where('Stok', '<=', 25)),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()->label('Lihat'),
+                Tables\Actions\EditAction::make()->label('Edit'),
+                Tables\Actions\DeleteAction::make()->label('Hapus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ExportBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label('Hapus'),
                 ]),
             ])
             ->defaultSort('NmObat')
