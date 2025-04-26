@@ -100,9 +100,8 @@ class ObatResource extends Resource
                 Select::make('KdSuplier')
                     ->required()
                     ->label('Supplier')
-                    ->options(function () {
-                        return Suplier::all()->pluck('NmSuplier', 'KdSuplier');
-                    })
+                    ->relationship('suplier', 'NmSuplier')
+                    ->preload()
                     ->searchable()
                     ->placeholder('Select supplier')
                     ->columnSpanFull(),

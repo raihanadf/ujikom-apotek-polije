@@ -49,9 +49,8 @@ class PenjualanResource extends Resource
                 Select::make('KdPelanggan')
                     ->required()
                     ->label('Customer')
-                    ->options(function () {
-                        return Pelanggan::all()->pluck('NmPelanggan', 'KdPelanggan');
-                    })
+                    ->relationship('pelanggan', 'NmPelanggan')
+                    ->preload()
                     ->searchable()
                     ->placeholder('Select customer')
                     ->columnSpan(1),
