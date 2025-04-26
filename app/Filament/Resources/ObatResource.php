@@ -3,10 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ObatResource\Pages;
-use App\Filament\Resources\ObatResource\RelationManagers;
 use App\Models\Obat;
-use App\Models\Suplier;
-use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -15,7 +12,6 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Filters\SelectFilter;
 
 class ObatResource extends Resource
