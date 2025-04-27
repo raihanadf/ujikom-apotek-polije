@@ -152,4 +152,9 @@ class PembelianResource extends Resource
             'edit' => Pages\EditPembelian::route('/{record}/edit'),
         ];
     }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->role == "admin";
+    }
 }

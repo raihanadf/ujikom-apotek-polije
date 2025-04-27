@@ -19,6 +19,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Exports\PenjualanExporter;
+use Filament\Tables\Actions\ExportAction;
 
 class PenjualanResource extends Resource
 {
@@ -37,6 +39,7 @@ class PenjualanResource extends Resource
 
     public static function form(Form $form): Form
     {
+        // Existing form code remains unchanged
         return $form
             ->schema([
                 DatePicker::make('TglNota')
@@ -129,7 +132,41 @@ class PenjualanResource extends Resource
                     ->relationship('pelanggan', 'NmPelanggan'),
                 Filter::make('big_sales')
                     ->label('Penjualan Besar')
-                    ->query(fn(Builder $query): Builder => $query->whereHas('obat', fn(Builder $query) => $query->where('penjualan_detail.Jumlah', '>=', 10)))
+                    ->query(fn(Builder $query): Builder => $query->whereHas('obat', fn(Builder $query) => $query->where('penjualan_detail.Jumlah', '>=', 10))),
+
+                // Filter berdasarkan rentang tanggal
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('dari_tanggal')
+                            ->label('Dari Tanggal'),
+                        DatePicker::make('sampai_tanggal')
+                            ->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['dari_tanggal'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('TglNota', '>=', $date),
+                            )
+                            ->when(
+                                $data['sampai_tanggal'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('TglNota', '<=', $date),
+                            );
+                    })
+                    ->label('Rentang Tanggal')
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['dari_tanggal'] ?? null) {
+                            $indicators['dari_tanggal'] = 'Dari: ' . $data['dari_tanggal'];
+                        }
+
+                        if ($data['sampai_tanggal'] ?? null) {
+                            $indicators['sampai_tanggal'] = 'Sampai: ' . $data['sampai_tanggal'];
+                        }
+
+                        return $indicators;
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()->label('Lihat'),
@@ -140,6 +177,10 @@ class PenjualanResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()->label('Hapus'),
                 ]),
+            ])
+            ->headerActions([
+                ExportAction::make()
+                    ->exporter(PenjualanExporter::class)
             ])
             ->defaultSort('Nota', 'desc')
             ->striped();
@@ -160,5 +201,10 @@ class PenjualanResource extends Resource
             'view' => Pages\ViewPenjualan::route('/{record}'),
             'edit' => Pages\EditPenjualan::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->role == "admin" || auth()->user()->role == "apoteker";
     }
 }

@@ -23,6 +23,7 @@ class ObatSeeder extends Seeder
                 'HargaJual' => 10000.00,
                 'Stok' => 100,
                 'KdSuplier' => 'SUP001',
+                'TglKadaluarsa' => '2025-06-30',
             ],
             [
                 'KdObat' => 'OBT002',
@@ -33,6 +34,7 @@ class ObatSeeder extends Seeder
                 'HargaJual' => 18000.00,
                 'Stok' => 75,
                 'KdSuplier' => 'SUP001',
+                'TglKadaluarsa' => '2025-06-30',
             ],
             [
                 'KdObat' => 'OBT003',
@@ -43,6 +45,7 @@ class ObatSeeder extends Seeder
                 'HargaJual' => 55000.00,
                 'Stok' => 50,
                 'KdSuplier' => 'SUP002',
+                'TglKadaluarsa' => '2025-06-30',
             ],
             [
                 'KdObat' => 'OBT004',
@@ -53,6 +56,7 @@ class ObatSeeder extends Seeder
                 'HargaJual' => 16500.00,
                 'Stok' => 40,
                 'KdSuplier' => 'SUP002',
+                'TglKadaluarsa' => '2025-04-19',
             ],
             [
                 'KdObat' => 'OBT005',
@@ -62,6 +66,7 @@ class ObatSeeder extends Seeder
                 'HargaBeli' => 9000.00,
                 'HargaJual' => 12000.00,
                 'Stok' => 60,
+                'TglKadaluarsa' => '2025-04-29',
                 'KdSuplier' => 'SUP003',
             ],
         ];

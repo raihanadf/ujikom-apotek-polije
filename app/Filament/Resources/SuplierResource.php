@@ -144,4 +144,9 @@ class SuplierResource extends Resource
             'edit' => Pages\EditSuplier::route('/{record}/edit'),
         ];
     }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->role == "admin";
+    }
 }

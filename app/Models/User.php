@@ -24,6 +24,8 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'CustomerId',
+        'role',
     ];
 
     /**
@@ -51,9 +53,11 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return (
-            str_ends_with($this->email, '@r.com') ||
-            str_ends_with($this->email, '@d.com')
-        );
+        return (str_ends_with($this->email, 'com'));
+    }
+
+    public function pelanggan()
+    {
+        return $this->belongsTo(Pelanggan::class, 'CustomerId', 'KdPelanggan');
     }
 }

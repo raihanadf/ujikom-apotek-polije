@@ -9,6 +9,7 @@ use App\Models\Suplier;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -17,6 +18,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Carbon\Carbon;
 
 class ObatResource extends Resource
 {
@@ -97,6 +100,13 @@ class ObatResource extends Resource
                     ->placeholder('100')
                     ->minValue(0),
 
+                DateTimePicker::make('TglKadaluarsa')
+                    ->required()
+                    ->label('Tanggal Kadaluarsa')
+                    ->minDate(now())
+                    ->displayFormat('d/m/Y')
+                    ->native(false),
+
                 Select::make('KdSuplier')
                     ->required()
                     ->label('Supplier')
@@ -151,6 +161,19 @@ class ObatResource extends Resource
                         $state <= 10 ? 'danger' : ($state <= 25 ? 'warning' : 'success')
                     ),
 
+                TextColumn::make('TglKadaluarsa')
+                    ->label('Kadaluarsa')
+                    ->date('d/m/Y')
+                    ->sortable()
+                    ->color(
+                        fn($record): string =>
+                        Carbon::parse($record->TglKadaluarsa)->lte(Carbon::now())
+                            ? 'danger'
+                            : (Carbon::parse($record->TglKadaluarsa)->lte(Carbon::now()->addDays(7))
+                                ? 'warning'
+                                : 'success')
+                    ),
+
                 TextColumn::make('suplier.NmSuplier')
                     ->label('Supplier')
                     ->searchable()
@@ -176,6 +199,26 @@ class ObatResource extends Resource
                 Tables\Filters\Filter::make('low_stock')
                     ->label('Stok Rendah')
                     ->query(fn(Builder $query): Builder => $query->where('Stok', '<=', 25)),
+
+                // Filter untuk obat yang akan kadaluarsa dalam 7 hari
+                Filter::make('akan_kadaluarsa')
+                    ->label('Akan Kadaluarsa (7 Hari)')
+                    ->query(function (Builder $query): Builder {
+                        $oneWeekFromNow = Carbon::now()->addDays(7);
+                        return $query
+                            ->where('TglKadaluarsa', '>=', Carbon::now())
+                            ->where('TglKadaluarsa', '<=', $oneWeekFromNow);
+                    })
+                    ->indicator('Akan Kadaluarsa'),
+
+                // Filter untuk obat yang sudah kadaluarsa
+                Filter::make('sudah_kadaluarsa')
+                    ->label('Sudah Kadaluarsa')
+                    ->query(
+                        fn(Builder $query): Builder =>
+                        $query->where('TglKadaluarsa', '<', Carbon::now())
+                    )
+                    ->indicator('Sudah Kadaluarsa'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()->label('Lihat'),
@@ -205,5 +248,10 @@ class ObatResource extends Resource
             'create' => Pages\CreateObat::route('/create'),
             'edit' => Pages\EditObat::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->role == "admin" || auth()->user()->role == "apoteker";
     }
 }

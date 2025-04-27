@@ -150,4 +150,9 @@ class PelangganResource extends Resource
             'edit' => Pages\EditPelanggan::route('/{record}/edit'),
         ];
     }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->role == "admin";
+    }
 }
