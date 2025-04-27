@@ -5,22 +5,41 @@ namespace App\Filament\Resources\PenjualanResource\Pages;
 use App\Filament\Resources\PenjualanResource;
 use App\Models\Penjualan;
 use App\Models\Obat;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreatePenjualan extends CreateRecord
 {
     protected static string $resource = PenjualanResource::class;
+    public $penjualanDetail;
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['Nota'] = $this->generateNextNotaNumber();
-
         $this->penjualanDetail = $data['penjualan_detail'] ?? [];
-        unset($data['penjualan_detail']);
 
+        foreach ($this->penjualanDetail as $detail) {
+            if (isset($detail['KdObat'])) {
+                $obat = \App\Models\Obat::where('KdObat', $detail['KdObat'])->first();
+
+                if ($obat && $obat->TglKadaluarsa < now()) {
+                    // Show notification
+                    Notification::make()
+                        ->title("Expired Medication")
+                        ->body("Obat {$detail['KdObat']} udah expired di tanggal {$obat->TglKadaluarsa}.")
+                        ->danger()
+                        ->send();
+
+                    // Halt the execution and redirect back
+                    $this->halt();
+                    return $data; // This return won't actually happen due to the halt()
+                }
+            }
+        }
+
+        unset($data['penjualan_detail']);
         return $data;
     }
-
     protected function afterCreate(): void
     {
         foreach ($this->penjualanDetail as $item) {
